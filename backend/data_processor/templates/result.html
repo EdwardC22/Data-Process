@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inferred Data Types</title>
+</head>
+<body>
+    <h1>Inferred Data Types</h1>
+    <table border="1">
+        <tr>
+            <th>Column</th>
+            <th>Inferred Data Type</th>
+        </tr>
+        {% for column, data_type in inferred_types.items %}
+        <tr>
+            <td>{{ column }}</td>
+            <td>{{ data_type }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

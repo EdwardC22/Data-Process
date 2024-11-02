@@ -1,0 +1,15 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Data File</title>
+</head>
+<body>
+    <h1>Upload Data File</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload and Infer Data Types</button>
+    </form>
+</body>
+</html>
