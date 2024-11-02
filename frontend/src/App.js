@@ -21,7 +21,7 @@ function App() {
     if (!processedData) return;
 
     const payload = {
-      file_name: processedData.file_name, // Assuming the backend sends back the file name
+      file_name: processedData.file_name,
       overrides: overrides,
     };
 
