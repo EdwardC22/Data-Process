@@ -10,6 +10,7 @@ from .serializers import DataTypeSerializer
 
 
 
+
 @api_view(['POST'])
 def api_infer_data_types(request):
     file = request.FILES['file']
