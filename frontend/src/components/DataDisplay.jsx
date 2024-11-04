@@ -3,12 +3,22 @@ import React from "react";
 function DataDisplay({ data, columns, dtypes, onOverride }) {
   const userFriendlyTypes = {
     object: "Text",
-    float64: "Decimal Number",
-    int64: "Integer",
-    Int64: "Integer",
-    "datetime64[ns]": "Date",
     bool: "Boolean",
     category: "Category",
+  };
+
+  const getFriendlyType = (dtype) => {
+    dtype = dtype.toLowerCase();
+
+    if (dtype.startsWith("int")) {
+      return "Integer";
+    } else if (dtype.startsWith("float")) {
+      return "Decimal Number";
+    } else if (dtype.startsWith("datetime")) {
+      return "Date";
+    } else {
+      return userFriendlyTypes[dtype] || dtype;
+    }
   };
 
   const dataTypesOptions = [
@@ -36,7 +46,7 @@ function DataDisplay({ data, columns, dtypes, onOverride }) {
             <tr key={index} className="text-center">
               <td className="border px-4 py-2">{col}</td>
               <td className="border px-4 py-2">
-                {userFriendlyTypes[dtypes[col]] || dtypes[col]}
+                {getFriendlyType(dtypes[col])}
               </td>
               <td className="border px-4 py-2">
                 <select
