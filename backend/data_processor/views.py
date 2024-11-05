@@ -1,5 +1,3 @@
-import os
-from django.conf import settings
 from django.shortcuts import render
 import numpy as np
 from .forms import UploadFileForm
@@ -39,7 +37,7 @@ def upload_file(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             data_file = DataFile(file=request.FILES['file'])
-            # data_file.save()
+            data_file.save()
             inferred_types = infer_data_types(data_file.file.path)
             return render(request, 'data_processor/result.html', {
                 'inferred_types': inferred_types
@@ -120,47 +118,4 @@ def infer_data_types(file_path):
     return inferred_types
 
 
-def apply_overrides(df, overrides):
-    for col, new_type in overrides.items():
-        if new_type == 'int64':
-            df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
-        elif new_type == 'float64':
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-        elif new_type == 'bool':
-            df[col] = df[col].astype('bool')
-        elif new_type == 'datetime64[ns]':
-            df[col] = pd.to_datetime(df[col], errors='coerce')
-        elif new_type == 'category':
-            df[col] = df[col].astype('category')
-        elif new_type == 'object':
-            df[col] = df[col].astype('object')
-    return df
 
-
-@api_view(['POST'])
-def api_apply_overrides(request):
-    file_name = request.data.get('file_name')
-    overrides = request.data.get('overrides', {})
-    file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', file_name)
-
-    # Read the DataFrame
-    if file_path.endswith('.csv'):
-        df = pd.read_csv(file_path)
-    else:
-        df = pd.read_excel(file_path)
-
-    # Apply overrides
-    df = apply_overrides(df, overrides)
-
-    # Update data types
-    inferred_types = {col: str(df[col].dtype) for col in df.columns}
-
-    # Prepare response
-    data_preview = {
-        'data': df.head().to_dict(orient='records'),
-        'columns': df.columns.tolist(),
-        'dtypes': inferred_types,
-        'file_name': file_name,
-    }
-
-    return Response(data_preview)

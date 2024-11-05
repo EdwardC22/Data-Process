@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import FileUpload from "./components/FileUpload";
 import DataDisplay from "./components/DataDisplay";
@@ -21,7 +22,7 @@ function App() {
     if (!processedData) return;
 
     const payload = {
-      file_name: processedData.file_name,
+      file_name: processedData.file_name, // Assuming the backend sends back the file name
       overrides: overrides,
     };
 

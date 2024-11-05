@@ -83,7 +83,7 @@ function DataDisplay({ data, columns, dtypes, onOverride }) {
               <tr key={rowIndex} className="text-center">
                 {columns.map((col, colIndex) => (
                   <td key={colIndex} className="border px-4 py-2">
-                    {row[col]}
+                    {row[col] !== null ? row[col].toString() : ""}
                   </td>
                 ))}
               </tr>
