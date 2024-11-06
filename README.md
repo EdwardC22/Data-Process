@@ -110,5 +110,3 @@ Multi-page PDF Support:
 4. Enhance PDF generation to handle and format multi-page documents, ensuring that all data is included and properly formatted regardless of size.
 5. User Authentication:
 Add user authentication and authorization features to secure data access and manage user-specific settings or histories.
-6. Complete Data Download:
-Provide options for users to download the fully processed dataset in various formats (e.g., CSV, Excel), in addition to the PDF report.
