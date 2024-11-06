@@ -1,36 +1,83 @@
+import os
+import random
 from django.shortcuts import render
 import numpy as np
+from openpyxl import load_workbook
 from .forms import UploadFileForm
 from .models import DataFile
 import pandas as pd
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import dask.dataframe as dd
 # from .serializers import DataTypeSerializer
 # from typing import Dict, Any
 
 
-
+CSV_SIZE_THRESHOLD = 10 * 1024 * 1024
 
 @api_view(['POST'])
 def api_infer_data_types(request):
     file = request.FILES['file']
+    if not file:
+        return Response({"error": "No file uploaded."}, status=400)
+    
     data_file = DataFile(file=file)
     data_file.save()
-    inferred_types = infer_data_types(data_file.file.path)
 
-    # Read the converted DataFrame for preview
-    if data_file.file.path.endswith('.csv'):
-        df = pd.read_csv(data_file.file.path)
-    else:
-        df = pd.read_excel(data_file.file.path)
+    file_size = os.path.getsize(data_file.file.path)
+    
+    try:
+        # Read the converted DataFrame for preview
+        if data_file.file.path.endswith('.csv'):
+            if file_size > CSV_SIZE_THRESHOLD:
+                df_dask  = dd.read_csv(data_file.file.path, assume_missing=True)
 
-    data_preview = {
-        'data': df.head().to_dict(orient='records'),
-        'columns': df.columns.tolist(),
-        'dtypes': inferred_types
-    }
+                # Sample size is 10% of the total rows
+                total_rows = df_dask.shape[0].compute()
+                sample_size = max(1, total_rows // 10)
 
-    return Response(data_preview)
+                # Randomly sample the data
+                sampled_indices = sorted(random.sample(range(total_rows), sample_size))
+                df_sampled = df_dask.loc[sampled_indices].compute()
+                df = df_sampled
+            else:
+                df = pd.read_csv(data_file.file.path)
+        elif data_file.file.path.endswith('.xlsx', '.xls'):
+            wb = load_workbook(filename=data_file.file.path, read_only=True, data_only=True)
+            ws = wb.active 
+
+            data = ws.values
+
+            if not data:
+                return Response({"error": "Excel is empty."}, status=400)
+
+            # Extract headers and data rows
+            headers = data[0]
+            data_rows = data[1:]
+
+            # Sample size is 10% of the total rows
+            sample_size = max(1, len(data_rows) // 10)
+
+            # Randomly sample the data
+            sampled_rows = random.sample(data_rows, sample_size) if len(data_rows) >= sample_size else data_rows
+
+            # Create a DataFrame from the sampled data
+            df = pd.DataFrame(sampled_rows, columns=headers)
+        else:
+            return Response({"error": "Unsupported file format."}, status=400)
+            
+        inferred_types = infer_and_convert_data_types(df)
+
+        data_preview = {
+            'data': df.head(100).to_dict(orient='records'),
+            'columns': df.columns.tolist(),
+            'dtypes': inferred_types
+        }
+
+        return Response(data_preview, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 def upload_file(request):
     if request.method == 'POST':
@@ -38,7 +85,7 @@ def upload_file(request):
         if form.is_valid():
             data_file = DataFile(file=request.FILES['file'])
             data_file.save()
-            inferred_types = infer_data_types(data_file.file.path)
+            inferred_types = infer_and_convert_data_types(data_file.file.path)
             return render(request, 'data_processor/result.html', {
                 'inferred_types': inferred_types
             })
@@ -101,21 +148,6 @@ def infer_integer_size(series):
     else:
         return 'int64'
 
-def infer_data_types(file_path):
-    # Read the file into a Pandas DataFrame
-    if file_path.endswith('.csv'):
-        df = pd.read_csv(file_path, low_memory=False)
-    else:
-        df = pd.read_excel(file_path)
-
-    # Use the provided function to infer and convert data types
-    
-    inferred_types = infer_and_convert_data_types(df)
-    
-
-    # Prepare inferred types dictionary
-
-    return inferred_types
 
 
 

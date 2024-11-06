@@ -57,6 +57,7 @@ function DataDisplay({ data, columns, dtypes, onOverride }) {
         pdf.save("data_types.pdf");
 
         setHideOverrideType(false);
+        
       });
     }, 0);
   };
