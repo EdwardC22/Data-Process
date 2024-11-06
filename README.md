@@ -94,7 +94,21 @@ yarn start
 
 ### 1. Large File Handling
 1. CSV Files:
-        For CSV files larger than 10MB, the backend utilizes Dask to efficiently read and process the data.
-        Dask reads the large CSV file and randomly samples 10% of the data rows to perform data type inference, ensuring optimal performance and memory usage.
+    - For CSV files larger than 10MB, the backend utilizes Dask to efficiently read and process the data.
+    - Dask reads the large CSV file and randomly samples 10% of the data rows to perform data type inference, ensuring optimal performance and memory usage.
 2. Excel Files:
-        Excel files are read using OpenPyXL in read-only mode (read_only=True), ensuring that the original files remain unmodified and are read efficiently.
+    - Excel files are read using OpenPyXL in read-only mode (read_only=True), ensuring that the original files remain unmodified and are read efficiently.
+
+### 2. Future Improvement Directions
+1. Enhanced Sampling Techniques:
+Implement stratified sampling to ensure that the sampled data is more representative, especially for datasets with imbalanced categories.
+2. Asynchronous Task Processing:
+Integrate Celery or similar task queues to handle file processing asynchronously, improving scalability and responsiveness, particularly for extremely large datasets.
+3. Progress Bars:
+Implement detailed progress bars on the frontend to provide real-time feedback during file upload and processing.
+Multi-page PDF Support:
+4. Enhance PDF generation to handle and format multi-page documents, ensuring that all data is included and properly formatted regardless of size.
+5. User Authentication:
+Add user authentication and authorization features to secure data access and manage user-specific settings or histories.
+6. Complete Data Download:
+Provide options for users to download the fully processed dataset in various formats (e.g., CSV, Excel), in addition to the PDF report.
